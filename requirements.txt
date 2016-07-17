@@ -1,0 +1,5 @@
+Flask==0.11.1
+Flask-Bootstrap==3.3.6.0
+# Zappa needs a fix to be not broken
+git+https://github.com/quarry-org/Zappa.git@quarrius
+git+https://github.com/quarrius/toybox.git

@@ -1,0 +1,19 @@
+html {
+    height: 100%;
+}
+
+body {
+    height: 100%;
+    margin: 0px;
+    padding: 0px;
+    background-color: #000;
+
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    line-height: 160%;
+}
+
+#map_view {
+    height: 100%;
+    width: 100%;
+}

@@ -1,0 +1,18 @@
+{% extends '_base.html' %}
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet"
+            href="//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.css" />
+    <link rel="stylesheet"
+            href="{{ url_for('static', filename='css/view-map.css') }}" />
+{% endblock %}
+{% block scripts %}
+    {{ super() }}
+    <script src="//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.js"></script>
+    <script src="{{ url_for('static', filename='js/view-map.js') }}"></script>
+{% endblock %}
+{% block title %}Quarri.us Map - {{ map_id }}{% endblock %}
+{% block content %}
+    <div id="map_view">
+    </div>
+{% endblock %}
