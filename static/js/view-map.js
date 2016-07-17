@@ -12,7 +12,7 @@ function getMapId() {
     return url.pathname.match(/\/m\/([^\/&?]+)/)[1];
 }
 
-MAP_BASE_URL = '//s3.amazonaws.com/quarry-output/heightmaps/';
+MAP_BASE_URL = '//s3.amazonaws.com/quarrius-output/worlds/';
 MAP_TILE_SUFFIX = '/region/r.{x}.{y}.mca.png'
 
 var map = L.map('map_view', {

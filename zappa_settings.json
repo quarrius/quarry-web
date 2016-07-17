@@ -1,6 +1,6 @@
 {
     "dev": {
-        "app_function": "quarry_web.app",
+        "app_function": "app.app",
         "aws_region": "us-east-1",
         "cache_cluster_enabled": false,
         "debug": false,

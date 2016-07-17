@@ -11,7 +11,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/leaflet.js"></script>
     <script src="{{ url_for('static', filename='js/view-map.js') }}"></script>
 {% endblock %}
-{% block title %}Quarri.us Map - {{ map_id }}{% endblock %}
+{% block title %}Quarri.us Map - {{ world.name }}{% endblock %}
 {% block content %}
     <div id="map_view">
     </div>
