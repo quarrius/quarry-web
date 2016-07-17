@@ -1,0 +1,14 @@
+{% extends '_base.html' %}
+{% block page_content %}
+    <div>
+        <pre>{{ user.guid }}</pre>
+    </div>
+    <ul>
+    {% for world in user.worlds %}
+        <li>
+            <pre>{{ world.guid }}</pre>
+            <pre>{{ world.name }}</pre>
+        </li>
+    {% endfor %}
+    </ul>
+{% endblock %}
