@@ -3,10 +3,11 @@
 
 import os
 import uuid
+import hashlib
 
 import flask
 import flask_bootstrap
-from flask.ext.github import GitHub
+from flask_github import GitHub
 from playhouse.flask_utils import FlaskDB, get_object_or_404
 
 from toybox import DB_INIT, User, World
@@ -15,11 +16,9 @@ app = flask.Flask(__name__)
 app.config.from_pyfile('.context')
 
 flask_bootstrap.Bootstrap(app)
-flask_oauth = OAuth(app)
+github = GitHub(app)
 
 flask_db = FlaskDB(app, DB_INIT(app.config['DATABASE']))
-
-github = GitHub(app)
 
 @app.route('/')
 def index():
@@ -33,21 +32,34 @@ def about():
 @app.route('/login')
 def login():
     if flask.session.get('user_guid', None) is None:
-        return github.authorize(scope='user:email')
-    else:
-        return flask.redirect(flask.url_for('index'))
+        github_oauth_token = flask.session.get('github_oauth_token', None)
+        if github_oauth_token is None:
+            return github.authorize(scope='user:email')
+        user = User.select().where(User.password == github_oauth_token)
+        flask.session['user_guid'] = user.guid
+    return flask.redirect(flask.url_for('index'))
 
 @app.route('/login/callback/github')
 @github.authorized_handler
-def github_oauth_callback(oauth_token):
-    next_url = request.args.get('next') or flask.url_for('index')
-    if oauth_token is not None:
-        user = User.select().where(User.password == oauth_token).first()
+def github_oauth_callback(github_oauth_token):
+    next_url = flask.request.args.get('next') or flask.url_for('index')
+    if github_oauth_token is not None:
+        flask.session['github_oauth_token'] = github_oauth_token
+        gh_user = github.get('user')
+        if gh_user['email'] is None:
+            gh_user['email'] = hashlib.sha256(gh_user['login']).hexdigest()
+        app.logger.debug('Fetched Github user data: %r', gh_user)
+        user = User.select().where(User.username == gh_user['login']).first()
         if user is None:
-            user = User.create(username=str(uuid.uuid4()),
-                password=oauth_token, email_addr=str(uuid.uuid4()))
+            user = User.create(
+                username=gh_user['login'],
+                password=github_oauth_token,
+                email_addr=gh_user['email'],
+            )
+        else:
+            user.password = github_oauth_token
+            user.save()
         flask.session['user_guid'] = user.guid
-        flask.session['github_oauth_token'] = oauth_token
     else:
         # show some kind of error
         pass
@@ -59,7 +71,7 @@ def logout():
     flask.session.pop('github_oauth_token', None)
     return flask.redirect(flask.url_for('index'))
 
-@github.tokengetter
+@github.access_token_getter
 def get_github_oauth_token():
     user_guid = flask.session.get('user_guid', None)
     github_oauth_token = flask.session.get('github_oauth_token', None)
@@ -71,7 +83,7 @@ def get_github_oauth_token():
 
 @app.route('/auth-debug')
 def auth_debug():
-    if 'user_guid' in flask.session:
+    if 'github_oauth_token' in flask.session:
         return str(github.get('user'))
 
 @app.route('/m/<string:map_token>')
@@ -89,7 +101,7 @@ def list_worlds(user_guid):
     )
 
 if __name__ == '__main__':
-    if os.environ['TOYBOX_TESTING']:
+    if os.environ.get('TOYBOX_TESTING'):
         try:
             flask_db.database.create_tables([User, World])
         except Exception as err:
