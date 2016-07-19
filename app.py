@@ -10,15 +10,19 @@ import flask_bootstrap
 from flask_github import GitHub
 from playhouse.flask_utils import FlaskDB, get_object_or_404
 
-from toybox import DB_INIT, User, World
+from toybox import CFG_INIT, DB_INIT, User, World
+
+CFG = CFG_INIT()
 
 app = flask.Flask(__name__)
-app.config.from_pyfile('.context')
+app.config['GITHUB_CLIENT_ID'] = CFG.get('config:quarry-web:GITHUB_CLIENT_ID')
+app.config['GITHUB_CLIENT_SECRET'] = CFG.get('config:quarry-web:GITHUB_CLIENT_SECRET')
+app.config['SECRET_KEY'] = CFG.get('config:quarry-web:SECRET_KEY')
 
 flask_bootstrap.Bootstrap(app)
 github = GitHub(app)
 
-flask_db = FlaskDB(app, DB_INIT(app.config['DATABASE']))
+flask_db = FlaskDB(app, DB_INIT(CFG.get('config:toybox:DATABASE_URI')))
 
 @app.route('/')
 def index():
@@ -94,10 +98,10 @@ def view_map(map_token):
             World.map_token == map_token,
     ))
 
-@app.route('/users/<string:user_guid>/worlds')
-def list_worlds(user_guid):
+@app.route('/worlds')
+def list_worlds():
     return flask.render_template('users/worlds/list.html',
-        user=get_object_or_404(User, User.guid == user_guid),
+        user=get_object_or_404(User, User.guid == flask.session.get('user_guid', None)),
     )
 
 if __name__ == '__main__':

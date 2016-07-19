@@ -1,13 +1,18 @@
 {% extends '_base.html' %}
 {% block page_content %}
     <div>
+        <h1>Hi, {{ user.username }}!</h1>
+        Your user GUID is:
         <pre>{{ user.guid }}</pre>
     </div>
     <ul>
     {% for world in user.worlds %}
         <li>
-            <pre>{{ world.guid }}</pre>
-            <pre>{{ world.name }}</pre>
+            World: <a href="{{ url_for('view_map', map_token=world.map_token) }}">{{ world.name }}</a>
+            <ul>
+                <li>GUID: {{ world.guid }}</li>
+                <li>API Key: {{ world.api_key }}</li>
+            </ul>
         </li>
     {% endfor %}
     </ul>
