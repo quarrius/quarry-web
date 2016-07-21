@@ -10,9 +10,9 @@ import flask_bootstrap
 from flask_github import GitHub
 from playhouse.flask_utils import FlaskDB, get_object_or_404
 
-from toybox import CFG_INIT, DB_INIT, User, World
-
-CFG = CFG_INIT()
+from toybox.config import CFG
+from toybox.models import User, World
+from toybox.db import DATABASE
 
 app = flask.Flask(__name__)
 app.config['GITHUB_CLIENT_ID'] = CFG.get('config:quarry-web:GITHUB_CLIENT_ID')
@@ -21,8 +21,7 @@ app.config['SECRET_KEY'] = CFG.get('config:quarry-web:SECRET_KEY')
 
 flask_bootstrap.Bootstrap(app)
 github = GitHub(app)
-
-flask_db = FlaskDB(app, DB_INIT(CFG.get('config:toybox:DATABASE_URI')))
+flask_db = FlaskDB(app, DATABASE)
 
 @app.route('/')
 def index():
@@ -63,6 +62,7 @@ def github_oauth_callback(github_oauth_token):
         else:
             user.password = github_oauth_token
             user.save()
+        user.xattr['gh_user'] = {k: v for k, v in gh_user.iteritems() if v != ''}
         flask.session['user_guid'] = user.guid
     else:
         # show some kind of error
@@ -84,11 +84,6 @@ def get_github_oauth_token():
             user = User.select().where(User.guid == user_guid).get()
             github_oauth_token = user.password
     return github_oauth_token
-
-@app.route('/auth-debug')
-def auth_debug():
-    if 'github_oauth_token' in flask.session:
-        return str(github.get('user'))
 
 @app.route('/m/<string:map_token>')
 def view_map(map_token):
