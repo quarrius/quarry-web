@@ -1,7 +1,7 @@
 Flask==0.11.1
 Flask-Bootstrap==3.3.6.0
 # Zappa needs a fix to be not broken
-git+https://github.com/quarry-org/Zappa.git@quarrius
+git+https://github.com/quarrius/Zappa.git@quarrius
 #Flask-OAuthlib==0.9.3
 GitHub-Flask==3.1.2
 git+https://github.com/quarrius/toybox.git
